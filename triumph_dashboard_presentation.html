@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triumph Smart Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@100;200;300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;1,300&display=swap');
+
+  :root {
+    --black: #000000;
+    --white: #ffffff;
+    --triumph-orange: #E8501A;
+    --triumph-red: #CC2200;
+    --triumph-dark: #0A0A0A;
+    --triumph-mid: #111111;
+    --triumph-gray: #1C1C1E;
+    --triumph-light-gray: #2C2C2E;
+    --text-secondary: rgba(255,255,255,0.55);
+    --text-tertiary: rgba(255,255,255,0.3);
+    --orange-glow: rgba(232, 80, 26, 0.15);
+    --orange-subtle: rgba(232, 80, 26, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── SLIDE SYSTEM ── */
+  .slide {
+    min-height: 100svh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(40px, 8vw, 120px) clamp(24px, 6vw, 80px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── GRAIN TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── NAV DOTS ── */
+  .nav-dots {
+    position: fixed;
+    right: clamp(16px, 3vw, 32px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 500;
+  }
+
+  .nav-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: none;
+    padding: 0;
+  }
+
+  .nav-dot.active {
+    background: var(--triumph-orange);
+    height: 20px;
+    box-shadow: 0 0 8px var(--triumph-orange);
+  }
+
+  /* ── SLIDE 1: HERO ── */
+  #slide-1 {
+    background: var(--black);
+    text-align: center;
+  }
+
+  #slide-1::before {
+    content: '';
+    position: absolute;
+    bottom: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(ellipse, rgba(232,80,26,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .triumph-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border: 1px solid rgba(232, 80, 26, 0.3);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--triumph-orange);
+    margin-bottom: 48px;
+    background: rgba(232, 80, 26, 0.06);
+    opacity: 0;
+    animation: fadeSlideUp 0.8s 0.2s forwards;
+  }
+
+  .triumph-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--triumph-orange);
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  .hero-eyebrow {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(11px, 1.5vw, 14px);
+    letter-spacing: 0.35em;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeSlideUp 0.8s 0.4s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 14vw, 180px);
+    line-height: 0.88;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeSlideUp 0.8s 0.5s forwards;
+  }
+
+  .hero-title .line-orange {
+    color: var(--triumph-orange);
+    display: block;
+  }
+
+  .hero-title .line-white {
+    color: var(--white);
+    display: block;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(16px, 2.5vw, 22px);
+    font-weight: 300;
+    color: var(--text-secondary);
+    margin-top: 32px;
+    margin-bottom: 64px;
+    max-width: 520px;
+    line-height: 1.5;
+    opacity: 0;
+    animation: fadeSlideUp 0.8s 0.7s forwards;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: clamp(32px, 6vw, 80px);
+    opacity: 0;
+    animation: fadeSlideUp 0.8s 0.9s forwards;
+  }
+
+  .hero-stat {
+    text-align: center;
+  }
+
+  .hero-stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 5vw, 56px);
+    color: var(--white);
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-stat-number span {
+    color: var(--triumph-orange);
+  }
+
+  .hero-stat-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeIn 1s 1.5s forwards;
+  }
+
+  .scroll-hint span {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .scroll-arrow {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--triumph-orange), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.1); }
+  }
+
+  /* ── SLIDE 2: PROBLEM / VISION ── */
+  #slide-2 {
+    background: var(--triumph-dark);
+  }
+
+  #slide-2::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(232,80,26,0.4), transparent);
+  }
+
+  .split-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(40px, 6vw, 100px);
+    max-width: 1100px;
+    width: 100%;
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    .split-layout { grid-template-columns: 1fr; gap: 48px; }
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--triumph-orange);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .big-statement {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 6vw, 80px);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    margin-bottom: 24px;
+  }
+
+  .body-text {
+    font-size: clamp(15px, 1.8vw, 17px);
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .bike-visual {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .spec-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .spec-line:last-child { border-bottom: none; }
+
+  .spec-key {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .spec-val {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--white);
+  }
+
+  .spec-val.orange { color: var(--triumph-orange); }
+
+  /* ── SLIDE 3: WHAT WE BUILT ── */
+  #slide-3 {
+    background: var(--black);
+    text-align: center;
+  }
+
+  .centered-header {
+    max-width: 700px;
+    margin-bottom: clamp(48px, 7vw, 80px);
+  }
+
+  .centered-header .section-label { display: block; }
+
+  .centered-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 7vw, 96px);
+    line-height: 0.92;
+    letter-spacing: 0.01em;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    max-width: 1000px;
+    width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .features-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .feature-card {
+    background: var(--triumph-gray);
+    padding: clamp(24px, 3vw, 40px);
+    position: relative;
+    transition: background 0.3s ease;
+    text-align: left;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--triumph-orange);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .feature-card:hover { background: var(--triumph-light-gray); }
+  .feature-card:hover::before { transform: scaleX(1); }
+
+  .feature-icon {
+    font-size: 28px;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .feature-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .feature-tag {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--orange-subtle);
+    color: var(--triumph-orange);
+    border: 1px solid rgba(232, 80, 26, 0.2);
+  }
+
+  /* ── SLIDE 4: SYSTEM ARCHITECTURE ── */
+  #slide-4 {
+    background: var(--triumph-dark);
+  }
+
+  .arch-layout {
+    max-width: 1000px;
+    width: 100%;
+  }
+
+  .arch-header {
+    margin-bottom: clamp(40px, 6vw, 64px);
+  }
+
+  .arch-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 6vw, 80px);
+    line-height: 0.92;
+  }
+
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 48px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .arch-node {
+    flex: 1;
+    min-width: 120px;
+    background: var(--triumph-gray);
+    padding: 20px 16px;
+    text-align: center;
+    position: relative;
+  }
+
+  .arch-node-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .arch-node-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .arch-node-sub {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.05em;
+  }
+
+  .arch-node.highlight {
+    background: linear-gradient(135deg, rgba(232,80,26,0.2), rgba(232,80,26,0.05));
+    border: 1px solid rgba(232,80,26,0.25);
+  }
+
+  .arch-arrow {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    color: var(--triumph-orange);
+    font-size: 18px;
+    opacity: 0.6;
+  }
+
+  .arch-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  @media (max-width: 768px) {
+    .arch-details { grid-template-columns: 1fr; }
+    .arch-flow { flex-wrap: wrap; }
+    .arch-arrow { display: none; }
+    .arch-node { min-width: 100%; }
+  }
+
+  .arch-detail {
+    background: var(--triumph-gray);
+    padding: 20px 24px;
+  }
+
+  .arch-detail-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--triumph-orange);
+    margin-bottom: 8px;
+  }
+
+  .arch-detail-value {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .arch-detail-note {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+
+  /* ── SLIDE 5: HARDWARE / COST ── */
+  #slide-5 {
+    background: var(--black);
+  }
+
+  .hardware-layout {
+    max-width: 1000px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 5vw, 80px);
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .hardware-layout { grid-template-columns: 1fr; }
+  }
+
+  .hardware-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hardware-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--triumph-gray);
+    transition: background 0.2s;
+  }
+
+  .hardware-item:hover { background: var(--triumph-light-gray); }
+
+  .hardware-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hardware-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--triumph-orange);
+    flex-shrink: 0;
+  }
+
+  .hardware-name {
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .hardware-price {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+
+  .cost-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .cost-total {
+    background: linear-gradient(135deg, rgba(232,80,26,0.15), rgba(232,80,26,0.04));
+    border: 1px solid rgba(232,80,26,0.2);
+    padding: 32px;
+    text-align: center;
+  }
+
+  .cost-total-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+  }
+
+  .cost-total-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    color: var(--triumph-orange);
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  .cost-total-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+  }
+
+  .cost-phases {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .cost-phase {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--triumph-gray);
+  }
+
+  .cost-phase-name {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .cost-phase-status {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .cost-phase-status.active {
+    background: rgba(232,80,26,0.15);
+    color: var(--triumph-orange);
+    border: 1px solid rgba(232,80,26,0.3);
+  }
+
+  .cost-phase-status.planned {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-tertiary);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ── SLIDE 6: ROADMAP ── */
+  #slide-6 {
+    background: var(--triumph-dark);
+    text-align: center;
+  }
+
+  .roadmap-header {
+    max-width: 600px;
+    margin-bottom: clamp(40px, 6vw, 64px);
+  }
+
+  .roadmap-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 7vw, 96px);
+    line-height: 0.92;
+  }
+
+  .roadmap-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-width: 700px;
+    width: 100%;
+  }
+
+  .roadmap-item {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0;
+    background: var(--triumph-gray);
+    overflow: hidden;
+    transition: background 0.2s;
+  }
+
+  .roadmap-item:hover { background: var(--triumph-light-gray); }
+
+  .roadmap-phase-num {
+    background: var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--text-tertiary);
+    border-right: 1px solid rgba(255,255,255,0.05);
+    transition: color 0.2s;
+  }
+
+  .roadmap-item.current .roadmap-phase-num {
+    color: var(--triumph-orange);
+    background: rgba(232,80,26,0.08);
+  }
+
+  .roadmap-item-content {
+    padding: 18px 24px;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .roadmap-item-info {}
+
+  .roadmap-item-title {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .roadmap-item-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+
+  .roadmap-badge {
+    flex-shrink: 0;
+    font-size: 10px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .roadmap-badge.now {
+    background: rgba(232,80,26,0.15);
+    color: var(--triumph-orange);
+    border: 1px solid rgba(232,80,26,0.3);
+  }
+
+  .roadmap-badge.next {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ── SLIDE 7: CLOSING ── */
+  #slide-7 {
+    background: var(--black);
+    text-align: center;
+    position: relative;
+  }
+
+  #slide-7::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(232,80,26,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .closing-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 32px;
+  }
+
+  .closing-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 10vw, 130px);
+    line-height: 0.88;
+    margin-bottom: 40px;
+  }
+
+  .closing-title .main { display: block; color: var(--white); }
+  .closing-title .accent { display: block; color: var(--triumph-orange); }
+
+  .closing-body {
+    max-width: 480px;
+    font-size: clamp(15px, 2vw, 18px);
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin-bottom: 64px;
+  }
+
+  .credits {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .credit-pill {
+    padding: 8px 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+  }
+
+  .credit-pill strong {
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.45s; }
+  .reveal-delay-5 { transition-delay: 0.6s; }
+
+  /* ── DIVIDERS ── */
+  .slide-divider {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  }
+
+  /* ── ORANGE LINE ACCENT ── */
+  .orange-line {
+    width: 40px;
+    height: 2px;
+    background: var(--triumph-orange);
+    margin-bottom: 24px;
+  }
+
+  /* ── DASHBOARD MOCKUP ── */
+  .dashboard-mockup {
+    background: var(--triumph-dark);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 320px;
+    width: 100%;
+  }
+
+  .mockup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .mockup-title {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .mockup-live {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #30D158;
+  }
+
+  .mockup-live::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #30D158;
+    animation: pulse-dot 1.5s infinite;
+  }
+
+  .mockup-gauges {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .mockup-gauge {
+    background: var(--black);
+    border-radius: 10px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+
+  .mockup-gauge-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    line-height: 1;
+    color: var(--triumph-orange);
+    letter-spacing: 0.02em;
+  }
+
+  .mockup-gauge-unit {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .mockup-gauge-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .mockup-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .mockup-chip {
+    background: var(--black);
+    border-radius: 8px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .mockup-chip-val {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .mockup-chip-label {
+    font-size: 9px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 0; }
+
+</style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<nav class="nav-dots" id="navDots">
+  <button class="nav-dot active" onclick="scrollToSlide(0)"></button>
+  <button class="nav-dot" onclick="scrollToSlide(1)"></button>
+  <button class="nav-dot" onclick="scrollToSlide(2)"></button>
+  <button class="nav-dot" onclick="scrollToSlide(3)"></button>
+  <button class="nav-dot" onclick="scrollToSlide(4)"></button>
+  <button class="nav-dot" onclick="scrollToSlide(5)"></button>
+  <button class="nav-dot" onclick="scrollToSlide(6)"></button>
+</nav>
+
+<!-- ── SLIDE 1: HERO ── -->
+<section class="slide" id="slide-1">
+  <div class="triumph-badge">Speed Triple 2009 · Smart Dashboard</div>
+  <p class="hero-eyebrow">Ein Abend. Eine Idee. Ein System.</p>
+  <h1 class="hero-title">
+    <span class="line-orange">Triumph</span>
+    <span class="line-white">Reborn.</span>
+  </h1>
+  <p class="hero-subtitle">
+    Wie ein analoges Motorrad in 30 Minuten zum vernetzten Dashboard-System wurde — mit Raspberry Pi, iPhone und KI.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-number">30<span>min</span></div>
+      <div class="hero-stat-label">Planungszeit</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-number">~115<span>€</span></div>
+      <div class="hero-stat-label">Hardware Phase 1</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-number">6</div>
+      <div class="hero-stat-label">Ausbaustufen</div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+  <div class="slide-divider"></div>
+</section>
+
+<!-- ── SLIDE 2: DAS MOTORRAD ── -->
+<section class="slide" id="slide-2">
+  <div class="split-layout">
+    <div class="reveal">
+      <p class="section-label">Das Ausgangsprojekt</p>
+      <h2 class="big-statement">ANALOG WAR GESTERN.</h2>
+      <div class="orange-line"></div>
+      <p class="body-text">
+        Die Triumph Speed Triple 2009 — ein Naked Bike mit Charakter, ECU von Sagem, und einem analogen Tacho der nichts verrät außer Geschwindigkeit. Ziel: Das Motorrad aufwerten, ohne die Seele zu verändern. Ein digitales Nervensystem nachrüsten, das unsichtbar bleibt.
+      </p>
+    </div>
+    <div class="bike-visual reveal reveal-delay-2">
+      <div class="spec-line">
+        <span class="spec-key">Modell</span>
+        <span class="spec-val">Triumph Speed Triple</span>
+      </div>
+      <div class="spec-line">
+        <span class="spec-key">Baujahr</span>
+        <span class="spec-val">2009</span>
+      </div>
+      <div class="spec-line">
+        <span class="spec-key">ECU</span>
+        <span class="spec-val orange">Sagem MC1000</span>
+      </div>
+      <div class="spec-line">
+        <span class="spec-key">Protokoll</span>
+        <span class="spec-val orange">K-Line / ISO 9141-2</span>
+      </div>
+      <div class="spec-line">
+        <span class="spec-key">Diagnoseport</span>
+        <span class="spec-val">OBD2 Pin 7 + Pin 4</span>
+      </div>
+      <div class="spec-line">
+        <span class="spec-key">Status</span>
+        <span class="spec-val orange">Protokoll geknackt ✓</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-divider"></div>
+</section>
+
+<!-- ── SLIDE 3: WAS ENTSTAND ── -->
+<section class="slide" id="slide-3">
+  <div class="centered-header reveal">
+    <span class="section-label">Was in 30 Minuten entstand</span>
+    <h2>DAS SYSTEM.</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card reveal reveal-delay-1">
+      <span class="feature-icon">📡</span>
+      <div class="feature-title">ECU Daten live</div>
+      <div class="feature-desc">Drehzahl, Geschwindigkeit, Motortemperatur, Gangposition direkt aus der Triumph ECU via K-Line Protokoll.</div>
+      <span class="feature-tag">Lonelec KL-1</span>
+    </div>
+    <div class="feature-card reveal reveal-delay-2">
+      <span class="feature-icon">🛰</span>
+      <div class="feature-title">GPS Tracking</div>
+      <div class="feature-desc">Echtzeit-Position, Rundenzeiten, Track-Logging und Geschwindigkeits-Overlay für spätere Streckenanalyse.</div>
+      <span class="feature-tag">NEO-6M</span>
+    </div>
+    <div class="feature-card reveal reveal-delay-3">
+      <span class="feature-icon">⚖️</span>
+      <div class="feature-title">Neigungswinkel</div>
+      <div class="feature-desc">Schräglage links/rechts und Nickwinkel in Echtzeit — kombiniert mit GPS für vollständige Fahrdynamik-Daten.</div>
+      <span class="feature-tag">MPU-6050</span>
+    </div>
+    <div class="feature-card reveal reveal-delay-1">
+      <span class="feature-icon">📱</span>
+      <div class="feature-title">iPhone Dashboard</div>
+      <div class="feature-desc">Live-Anzeige im Safari Browser via WebSocket. iPhone verbindet sich automatisch per Instant Hotspot.</div>
+      <span class="feature-tag">FastAPI + WebSocket</span>
+    </div>
+    <div class="feature-card reveal reveal-delay-2">
+      <span class="feature-icon">🔒</span>
+      <div class="feature-title">Alarmanlage</div>
+      <div class="feature-desc">Erschütterungssensor, GSM-Modul für SMS-Alarm, Hupe via Relais — Standby-Modus direkt an der Batterie.</div>
+      <span class="feature-tag">Phase 2</span>
+    </div>
+    <div class="feature-card reveal reveal-delay-3">
+      <span class="feature-icon">🎥</span>
+      <div class="feature-title">Dashcam + Overlay</div>
+      <div class="feature-desc">Video mit eingeblendetem Speed, RPM und Strecke — wie bei professionellen Rennteams, aber selbst gebaut.</div>
+      <span class="feature-tag">Phase 3</span>
+    </div>
+  </div>
+  <div class="slide-divider"></div>
+</section>
+
+<!-- ── SLIDE 4: ARCHITEKTUR ── -->
+<section class="slide" id="slide-4">
+  <div class="arch-layout">
+    <div class="arch-header reveal">
+      <p class="section-label">Systemarchitektur</p>
+      <h2 class="big-statement">WIE ES FUNKTIONIERT.</h2>
+    </div>
+    <div class="arch-flow reveal reveal-delay-1">
+      <div class="arch-node">
+        <span class="arch-node-icon">🏍</span>
+        <div class="arch-node-title">Triumph ECU</div>
+        <div class="arch-node-sub">Sagem MC1000</div>
+      </div>
+      <div class="arch-arrow">›</div>
+      <div class="arch-node">
+        <span class="arch-node-icon">🔌</span>
+        <div class="arch-node-title">K-Line USB</div>
+        <div class="arch-node-sub">Lonelec KL-1</div>
+      </div>
+      <div class="arch-arrow">›</div>
+      <div class="arch-node highlight">
+        <span class="arch-node-icon">🖥</span>
+        <div class="arch-node-title">Raspberry Pi 4</div>
+        <div class="arch-node-sub">Zentrale</div>
+      </div>
+      <div class="arch-arrow">›</div>
+      <div class="arch-node">
+        <span class="arch-node-icon">📶</span>
+        <div class="arch-node-title">WiFi Hotspot</div>
+        <div class="arch-node-sub">Instant Connect</div>
+      </div>
+      <div class="arch-arrow">›</div>
+      <div class="arch-node">
+        <span class="arch-node-icon">📱</span>
+        <div class="arch-node-title">iPhone</div>
+        <div class="arch-node-sub">Safari Dashboard</div>
+      </div>
+    </div>
+    <div class="arch-details reveal reveal-delay-2">
+      <div class="arch-detail">
+        <div class="arch-detail-label">Stromversorgung</div>
+        <div class="arch-detail-value">12V → 5V Buck Converter</div>
+        <div class="arch-detail-note">TVS-Diode schützt vor Spannungsspitzen bis 40V</div>
+      </div>
+      <div class="arch-detail">
+        <div class="arch-detail-label">Sensoren direkt am Pi</div>
+        <div class="arch-detail-value">GPS via UART · IMU via I2C</div>
+        <div class="arch-detail-note">Kein Arduino nötig — Pi liest alles direkt</div>
+      </div>
+      <div class="arch-detail">
+        <div class="arch-detail-label">Verbindung iPhone</div>
+        <div class="arch-detail-value">http://triumph.local</div>
+        <div class="arch-detail-note">iOS aktiviert Hotspot automatisch beim Booten</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-divider"></div>
+</section>
+
+<!-- ── SLIDE 5: HARDWARE ── -->
+<section class="slide" id="slide-5">
+  <div class="hardware-layout">
+    <div>
+      <div class="reveal">
+        <p class="section-label">Phase 1 Hardware</p>
+        <h2 class="big-statement" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,6vw,72px);line-height:0.95;margin-bottom:24px;">EINKAUFS&shy;LISTE.</h2>
+      </div>
+      <div class="hardware-list reveal reveal-delay-1">
+        <div class="hardware-item">
+          <div class="hardware-item-left">
+            <div class="hardware-dot"></div>
+            <span class="hardware-name">Raspberry Pi 4 (2GB)</span>
+          </div>
+          <span class="hardware-price">57–65 €</span>
+        </div>
+        <div class="hardware-item">
+          <div class="hardware-item-left">
+            <div class="hardware-dot"></div>
+            <span class="hardware-name">Lonelec KL-1 K-Line Adapter</span>
+          </div>
+          <span class="hardware-price">18–25 €</span>
+        </div>
+        <div class="hardware-item">
+          <div class="hardware-item-left">
+            <div class="hardware-dot"></div>
+            <span class="hardware-name">NEO-6M GPS Modul</span>
+          </div>
+          <span class="hardware-price">6–10 €</span>
+        </div>
+        <div class="hardware-item">
+          <div class="hardware-item-left">
+            <div class="hardware-dot"></div>
+            <span class="hardware-name">MPU-6050 IMU Modul</span>
+          </div>
+          <span class="hardware-price">3–5 €</span>
+        </div>
+        <div class="hardware-item">
+          <div class="hardware-item-left">
+            <div class="hardware-dot"></div>
+            <span class="hardware-name">DC-DC Buck Converter + Schutz</span>
+          </div>
+          <span class="hardware-price">8–12 €</span>
+        </div>
+        <div class="hardware-item">
+          <div class="hardware-item-left">
+            <div class="hardware-dot"></div>
+            <span class="hardware-name">MicroSD + Kabel + Kleinteile</span>
+          </div>
+          <span class="hardware-price">17–24 €</span>
+        </div>
+      </div>
+    </div>
+    <div class="cost-summary reveal reveal-delay-2">
+      <div class="cost-total">
+        <div class="cost-total-label">Gesamtkosten Phase 1</div>
+        <div class="cost-total-number">~115€</div>
+        <div class="cost-total-sub">Gehäuse aus eigenem 3D-Drucker</div>
+      </div>
+      <div class="cost-phases">
+        <div class="cost-phase">
+          <span class="cost-phase-name">Phase 1 · ECU · GPS · IMU · Dashboard</span>
+          <span class="cost-phase-status active">Jetzt</span>
+        </div>
+        <div class="cost-phase">
+          <span class="cost-phase-name">Phase 2 · Alarmanlage + GSM</span>
+          <span class="cost-phase-status planned">+~15 €</span>
+        </div>
+        <div class="cost-phase">
+          <span class="cost-phase-name">Phase 3 · Dashcam + Video</span>
+          <span class="cost-phase-status planned">+~25 €</span>
+        </div>
+        <div class="cost-phase">
+          <span class="cost-phase-name">Phase 4 · TPMS Reifendruck</span>
+          <span class="cost-phase-status planned">+~35 €</span>
+        </div>
+        <div class="cost-phase">
+          <span class="cost-phase-name">Phase 5 · Externes Display</span>
+          <span class="cost-phase-status planned">+~50 €</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-divider"></div>
+</section>
+
+<!-- ── SLIDE 6: ROADMAP ── -->
+<section class="slide" id="slide-6">
+  <div class="roadmap-header reveal">
+    <p class="section-label">Der Plan</p>
+    <h2>ROADMAP.</h2>
+  </div>
+  <div class="roadmap-timeline">
+    <div class="roadmap-item current reveal reveal-delay-1">
+      <div class="roadmap-phase-num">1</div>
+      <div class="roadmap-item-content">
+        <div class="roadmap-item-info">
+          <div class="roadmap-item-title">ECU · GPS · Neigung · iPhone Dashboard</div>
+          <div class="roadmap-item-desc">K-Line ECU auslesen, GPS-Tracking, Schräglagenwinkel, Browser-Dashboard live</div>
+        </div>
+        <span class="roadmap-badge now">Aktiv</span>
+      </div>
+    </div>
+    <div class="roadmap-item reveal reveal-delay-2">
+      <div class="roadmap-phase-num">2</div>
+      <div class="roadmap-item-content">
+        <div class="roadmap-item-info">
+          <div class="roadmap-item-title">Alarmanlage + GSM</div>
+          <div class="roadmap-item-desc">Erschütterungsalarm, SMS-Benachrichtigung, Hupe via Relais, Standby-Modus</div>
+        </div>
+        <span class="roadmap-badge next">Geplant</span>
+      </div>
+    </div>
+    <div class="roadmap-item reveal reveal-delay-3">
+      <div class="roadmap-phase-num">3</div>
+      <div class="roadmap-item-content">
+        <div class="roadmap-item-info">
+          <div class="roadmap-item-title">Dashcam mit Daten-Overlay</div>
+          <div class="roadmap-item-desc">Pi Camera, Speed/RPM im Video eingeblendet, Session-Aufzeichnung</div>
+        </div>
+        <span class="roadmap-badge next">Geplant</span>
+      </div>
+    </div>
+    <div class="roadmap-item reveal reveal-delay-4">
+      <div class="roadmap-phase-num">4</div>
+      <div class="roadmap-item-content">
+        <div class="roadmap-item-info">
+          <div class="roadmap-item-title">TPMS + Rundenzeit-Analyse</div>
+          <div class="roadmap-item-desc">Bluetooth Reifendruck, Streckenanalyse nach Fahrt, Vergleich Rundenzeiten</div>
+        </div>
+        <span class="roadmap-badge next">Geplant</span>
+      </div>
+    </div>
+    <div class="roadmap-item reveal reveal-delay-5">
+      <div class="roadmap-phase-num">5</div>
+      <div class="roadmap-item-content">
+        <div class="roadmap-item-info">
+          <div class="roadmap-item-title">Externes Display + native App</div>
+          <div class="roadmap-item-desc">HDMI-Display im Cockpit, optionale native iOS App, vollständiges Rennstreckensystem</div>
+        </div>
+        <span class="roadmap-badge next">Vision</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-divider"></div>
+</section>
+
+<!-- ── SLIDE 7: CLOSING ── -->
+<section class="slide" id="slide-7">
+  <p class="closing-eyebrow reveal">Triumph Speed Triple · Smart Dashboard · 2026</p>
+  <h2 class="closing-title reveal reveal-delay-1">
+    <span class="main">Built in</span>
+    <span class="accent">30 min.</span>
+  </h2>
+  <p class="closing-body reveal reveal-delay-2">
+    Von der Idee zum vollständigen System-Konzept — inklusive Hardware-Liste, Schaltplan, Setup-Guide und erstem Python-Code. Das zeigt, was möglich ist wenn Mensch und KI gemeinsam denken.
+  </p>
+  <div class="credits reveal reveal-delay-3">
+    <div class="credit-pill">🏍 <strong>Triumph</strong> Speed Triple 2009</div>
+    <div class="credit-pill">🤖 Entwickelt mit <strong>Claude</strong> · Anthropic</div>
+    <div class="credit-pill">🛠 <strong>Raspberry Pi</strong> + Python + FastAPI</div>
+  </div>
+</section>
+
+<script>
+  // ── SCROLL REVEAL ──
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.15 });
+  reveals.forEach(el => observer.observe(el));
+
+  // ── NAV DOTS ──
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.nav-dot');
+
+  function scrollToSlide(i) {
+    slides[i].scrollIntoView({ behavior: 'smooth' });
+  }
+
+  const slideObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio > 0.4) {
+        const idx = Array.from(slides).indexOf(e.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: 0.4 });
+
+  slides.forEach(s => slideObserver.observe(s));
+
+  // ── KEYBOARD NAVIGATION ──
+  let currentSlide = 0;
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      currentSlide = Math.min(currentSlide + 1, slides.length - 1);
+      scrollToSlide(currentSlide);
+    }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      currentSlide = Math.max(currentSlide - 1, 0);
+      scrollToSlide(currentSlide);
+    }
+  });
+
+  // Track current slide
+  const trackObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio > 0.4) {
+        currentSlide = Array.from(slides).indexOf(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  slides.forEach(s => trackObserver.observe(s));
+</script>
+</body>
+</html>
